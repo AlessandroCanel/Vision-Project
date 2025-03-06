@@ -494,10 +494,7 @@ Baseline CNN 364,
 ```
 
 Table 6. This table shows how many parameters each model con-
-tains.
-
-```
-project and translated intoPyTorchachieved high accuracy
+tains project and translated into PyTorcha chieved high accuracy
 on the test set. It also had the least parameters of any model.
 We attempted to improve the model even further by creating
 a new network (Table 3) with 3 × 3 filters and increasing the
@@ -512,8 +509,6 @@ strategies, but we did worse. So we chose to simply use
 the He initialization to optimize training stability and gen-
 eralization performance.
 The original EfficientNetB7 model had about 63 mil-
-```
-
 lion parameters. The model was too complex for the task.
 The training was very long, and the accuracy score was
 much lower than the other models. So we used a sim-
