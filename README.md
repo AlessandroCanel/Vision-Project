@@ -1,5 +1,7 @@
 # A Comparative Study of Pre-trained Deep Learning Models for Grapevine Leaf
 
+Original Pdf Work at [Template_for_VCS_project_report.pdf](https://github.com/user-attachments/files/19105726/Template_for_VCS_project_report.pdf)
+
 # Disease Detection
 
 ## Lorenzo D’Antoni
@@ -55,8 +57,6 @@ Black Rot, ESCA, Leaf Blight or is healthy (Figure 1).
 Due to the lack of freely available annotated datasets, we
 aimed to implement and improve aKaggleproject [16] [15],
 the only source offering a dataset [14], although extremely
-
-```
 limited and small. The project used theTensorFlowframe-
 work to compare various deep learning pre-trained model
 architectures for grapevine leaf disease classification. We
@@ -68,10 +68,7 @@ evaluated the performance of our models using various met-
 rics and we also created a max-voting ensemble model that
 achieved a very good accuracy. We analyzed the results and
 discussed the strengths and weaknesses of our approach.
-```
 ## 2. Related Work
-
-```
 Before 2016, crop disease classification using plant im-
 ages relied on methods such as SVM, k-means clustering,
 and PCA [12]. Typically, k-means clustering was used to
@@ -97,11 +94,6 @@ ple and diverse sick spots (even of different diseases), and
 environmental and occlusion factors complicate the detec-
 tion and classification process.
 Real-time detection is useful for early disease interven-
-```
-
-```
-Figure 1. Grape leaf diseases.
-```
 tion and treatment, but it requires fast and efficient algo-
 rithms with high accuracy. These algorithms need to pro-
 cess large image data in real-time and often run on low-
@@ -159,7 +151,6 @@ images in total.
 ```
 ## 4. Method
 
-```
 We converted notebooks [16] and [15] fromTensorFlow
 toPyTorch, based on theKaggleproject related to the pre-
 vious paper. The project aims to find the best architectures
@@ -172,10 +163,10 @@ alizations, such as training and validation curves, accuracy
 scores, confusion matrices, classification metrics, and error
 visualization. They then combined the best three models
 into an ensemble model to boost performance.
-```
+
 ### 4.1. Translation
 
-```
+
 UnlikeTensorFlow, which has built-in APIs for training
 and validation when usingKeras,PyTorchrequires us to
 manually implement the training and evaluation loops from
@@ -203,23 +194,12 @@ over the spatial dimensions (height and width), resulting in
 a single value per feature map. This reduces the size of the
 feature maps and makes them easier for the next layers to
 process, while preserving important information.
-```
+
 ### 4.2. Data Split
 
-```
+
 We resized all images to 224 × 224 pixels before load-
 ing them intoPyTorchdatasets and data loaders. Then, we
-```
-
-```
-Dataset Size (number of images)
-Train 12000
-Validation 903
-Test 902
-```
-```
-Table 1. Data partitioning.
-```
 converted the images to tensors of shape (C×H×W) with
 values between 0. 0 and 1. 0. This can improve the stability
 and convergence of the training process.
@@ -267,8 +247,6 @@ convolutional layer but it works well, as we will see later.
 DenseNet (Densely Connected Convolutional Networks)
 [7] is a CNN architecture with dense connections between
 layers. In a dense block, each layer gets feature maps from
-
-```
 all previous layers and passes them to all next layers. This
 helps reuse features and improve gradient flow.
 Between dense blocks, transition layers reduce the size
@@ -279,11 +257,7 @@ bers of layers: DenseNet-121, DenseNet-169, DenseNet-
 201, and DenseNet-264. The authors picked DenseNet-121,
 which balances complexity and performance well, and we
 agree because the task is simple.
-```
-```
-4.3.3 EfficientNet
-```
-```
+
 EfficientNet [19] is a CNN architecture with a new com-
 pound scaling method that scales network depth, width, and
 resolution together, improving performance and efficiency
@@ -302,8 +276,7 @@ million parameters). The training was very slow, and the
 performance was bad because the training set is small, and
 bigger models can overfit to it. A smaller model does better
 because it is simpler and faster, as we will see next.
-```
-```
+
 4.3.4 MobileNet
 MobileNet [6] is a family of light CNN architectures that
 use depthwise separable convolutions as the main building
@@ -318,16 +291,14 @@ inal architecture: MobileNetV2, MobileNetV3, and Mo-
 bileNetV3 Small. The authors used the MobileNetV2 ver-
 sion. We agree with that because the next version, Mo-
 bileNetV3, is too sophisticated for our task.
-```
-```
+
 4.3.5 ResNet
-```
-```
+
 ResNet (Residual Network) [5] is a deep CNN architecture
 with residual blocks. These blocks have skip connections
 (shortcuts) that skip one or more convolutional layers, let-
 ting the network learn residual mappings, and making it eas-
-```
+
 
 ```
 Block (Conv-kernelsize) inch, outch
@@ -344,22 +315,6 @@ Linear + ReLU 32 , 512
 Linear + ReLU 512 , 512
 Linear + ReLU 512 , 4
 ```
-Table 2. Original baseline CNN architecture. Each convolutional
-layer is followed by ReLU, BatchNorm, and MaxPool layers. The
-padding is set to “same” for all blocks.
-
-ier to train very deep networks by avoiding the vanishing
-gradient problem.
-This architecture has many variants with different num-
-bers of layers: ResNet-18, ResNet-34, ResNet-50, ResNet-
-101 and ResNet-152. In deeper variants, like ResNet-
-and above, bottleneck blocks are used to save computation.
-
-The authors used the ResNet-50 model, which has 23
-million parameters. We think it is too complex for our goal,
-and a simpler model can do almost as well in less time, as
-we will see later, but it is still a good choice for training
-time.
 
 #### 4.3.6 VGG
 
@@ -401,8 +356,6 @@ padding is set to 1 for all blocks, ensuring that the spatial dimen-
 sions of the feature maps remain the same after convolution.
 ```
 ## 5. Experiments
-
-```
 We used the Adam [8] optimizer with default parameters,
 the cross-entropy loss function, 25 training epochs, batches
 of size 64 , and 8 as the patience value in the early stopping
@@ -419,18 +372,18 @@ bit) the models will make the project more complete and ef-
 ficient in training time, accuracy scores, and graph curves.
 We will show the outcomes and fine-tuning methods that we
 used next.
-```
+
 ### 5.1. Experimental Setup and Environment
 
-```
+
 We ran the experiments on Windows 11 with low-level
 hardware: an NVIDIA GeForce GTX 1060 6GB GPU, Intel
 Core i5-8600 CPU, and 16GB of RAM. We usedPyTorch
 2.1.2,Torchvision0.16.2, andpytorch-cuda12.1.
-```
+
 ### 5.2. Optimization techniques
 
-```
+
 We saw that overfitting and unstable training were prob-
 lems in most models. So we decided to apply the follow-
 ing techniques: dropout, weights initialization (He initial-
@@ -443,7 +396,7 @@ sian distribution with zero mean and variance based on
 the number of input neurons. This technique empirically
 shows meaningful improvement in training stability and
 speed (helping mitigate the vanishing and exploding gra-
-```
+
 
 ```
 Model Accuracy
@@ -518,10 +471,10 @@ MobileNetV2 16
 Our MobileNetV2 16
 EfficientNetB7 37
 ```
-```
+
 Table 5. This table illustrates for each model how many wrong
 predictions it made.
-```
+
 ```
 Model Number of parameters
 Our VGG16 134,285,
@@ -539,10 +492,10 @@ MobileNetV2 2,228,
 Our MobileNetV2 2,228,
 Baseline CNN 364,
 ```
-```
+
 Table 6. This table shows how many parameters each model con-
 tains.
-```
+
 ```
 project and translated intoPyTorchachieved high accuracy
 on the test set. It also had the least parameters of any model.
@@ -615,16 +568,14 @@ accuracy scores and the number of wrong predictions was
 different. But this is normal, because accuracy scores mea-
 sure the average correctness of the models. A model may
 have high accuracy because it is very good at predicting
-
-```
 some classes correctly, but it may also make many mistakes
 on other classes. On the other hand, a model with lower ac-
 curacy may spread its mistakes more evenly across different
 classes, leading to fewer overall wrong predictions.
-```
+
 ## 6. Conclusion
 
-```
+
 We wanted to examine, implement, and improve the
 Kaggleproject linked with this paper [11], which was the
 only source of a dataset for our task, though very small and
