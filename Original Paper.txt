@@ -1,0 +1,208 @@
+import numpy as np # Linear algebra
+import pandas as pd # Tabular data
+import matplotlib.pyplot as plt # Data visualization
+import seaborn as sns # High-level data visualization
+from tensorflow.keras.preprocessing.image import ImageDataGenerator # Object containing data
+from tensorflow.keras import Sequential # Model containing layers
+from tensorflow.keras import Input # Input layer
+from tensorflow.keras.layers import * # All other layers
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint # Executed after each epoch
+from tensorflow.keras.losses import SparseCategoricalCrossentropy # Loss for categorical data
+from tensorflow.keras.applications import * # Importing all model architectures
+
+# List containing disease names
+list_of_classes = ['Black Rot', 'ESCA', 'Leaf Blight', 'Healthy']
+# Variable containing batch size
+batch_size = 64
+
+# Datagen that will be used for model training
+train_datagen = ImageDataGenerator().flow_from_directory('/kaggle/input/augmented-grape-disease-detection-dataset/Final Training Data',
+                                                         target_size = (224,224),
+                                                         batch_size = batch_size,
+                                                         class_mode = 'sparse',
+                                                         classes = list_of_classes,
+                                                         shuffle = True)
+
+# Datagen that will be used for model validation
+validation_datagen = ImageDataGenerator().flow_from_directory('/kaggle/input/grape-disease-dataset-original/Original Data/test',
+                                                              target_size = (224,224),
+                                                              batch_size = batch_size,
+                                                              class_mode = 'sparse',
+                                                              classes = list_of_classes,
+                                                              shuffle = True)
+
+# Datagen that will be used for model testing
+test_datagen = ImageDataGenerator().flow_from_directory('/kaggle/input/grape-disease-dataset-original/Original Data/test',
+                                                        target_size = (224,224),
+                                                        batch_size = batch_size,
+                                                        class_mode = 'sparse',
+                                                        classes = list_of_classes,
+                                                        shuffle = False)
+
+# Building model pipeline
+def build_model(model):
+    # Freezing the parameters of the pre-trained model 
+    model.trainable = False
+    # Creating the final model
+    final_model = Sequential()
+    # Adding the pre-trained model
+    final_model.add(model)
+    # Adding the GlobalAvgPool2D layer
+    final_model.add(GlobalAvgPool2D())
+    # Adding a Dense layer with 4 neurons and softmax activation
+    final_model.add(Dense(4, activation='softmax'))
+    # Printing the summary of the model
+    final_model.summary()
+    # Returning the final model
+    return final_model
+
+# Training History Pipeline
+def plot_training_history(model_name, model_history):
+    ### Training accuracy:
+    # Setting figsize and dpi for the plot
+    plt.figure(figsize=(2,1.5), dpi=96)
+    # Plotting accuracy
+    plt.plot(model_history.history['accuracy'])
+    # Plotting validation accuracy
+    plt.plot(model_history.history['val_accuracy'])
+    # Adding the title
+    plt.title(f'{model_name} Accuracy')
+    # Adding x and y labels
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    # Adding the legend
+    plt.legend(['Train', 'Validation'], loc='lower right')
+    # Displaying the plot
+    plt.show()
+
+    ### Training loss:
+    # Setting figsize and dpi for the plot
+    plt.figure(figsize=(2.2,1.65), dpi=96)
+    # Plotting loss
+    plt.plot(model_history.history['loss'])
+    # Plotting validation loss
+    plt.plot(model_history.history['val_loss'])
+    # Adding the title
+    plt.title(f'{model_name} Loss')
+    # Adding x and y labels
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    # Adding the legend
+    plt.legend(['Train', 'Validation'], loc='upper right')
+    # Displaying the plot
+    plt.show()
+
+# Baseline CNN
+# Building the baseline CNN model
+baseline_CNN_model = Sequential([Input(shape=(224,224,3)),
+                                 Conv2D(32, 6, padding='same', activation='relu'),
+                                 BatchNormalization(),
+                                 MaxPooling2D(),
+                                 Conv2D(32, 5, padding='same', activation='relu'),
+                                 BatchNormalization(),
+                                 MaxPooling2D(),
+                                 Conv2D(32, 4, padding='same', activation='relu'),
+                                 BatchNormalization(),
+                                 MaxPooling2D(),
+                                 Conv2D(32, 3, padding='same', activation='relu'),
+                                 BatchNormalization(),
+                                 MaxPooling2D(),
+                                 Conv2D(32, 3, padding='same', activation='relu'),
+                                 BatchNormalization(),
+                                 MaxPooling2D(),
+                                 Conv2D(32, 3, padding='same', activation='relu'),
+                                 BatchNormalization(),
+                                 Conv2D(32, 3, padding='same', activation='relu'),
+                                 BatchNormalization(),
+                                 MaxPooling2D(),
+                                 Dropout(0.2),
+                                 Flatten(),
+                                 Dense(512, activation='relu'),
+                                 Dense(512, activation='relu'),
+                                 Dense(4)])
+
+# Printing the summary of the model
+baseline_CNN_model.summary()
+
+# Implementing EarlyStopping with val_loss and ModelCheckpoint with val_accuracy
+baseline_CNN_callbacks = [EarlyStopping(monitor='val_loss', patience=8, mode='min', restore_best_weights=True),
+                          ModelCheckpoint('/kaggle/working/model_weights/baseline_CNN_weights.hdf5',save_best_only=True,monitor='val_accuracy',mode='max')]
+
+# Compiling the model using Adam optimizer and sparse categorical crossentropy loss
+baseline_CNN_model.compile(optimizer = 'adam',
+                           loss = SparseCategoricalCrossentropy(from_logits=True),
+                           metrics = ['accuracy'])
+
+# Training the model for 25 epochs and saving the history
+final_baseline_CNN_model_history = baseline_CNN_model.fit(train_datagen,
+                                                          callbacks = baseline_CNN_callbacks,
+                                                          batch_size = batch_size,
+                                                          validation_data = validation_datagen,
+                                                          epochs = 25)
+
+# Getting pre-trained weights
+DenseNet121 = DenseNet121(input_shape=(224,224,3), include_top=False)
+
+# Building the final model
+final_DenseNet121_model = build_model(DenseNet121)
+
+# Implementing EarlyStopping with val_loss and ModelCheckpoint with val_accuracy
+DenseNet121_callbacks = [EarlyStopping(monitor='val_loss', patience=8, mode='min', restore_best_weights=True),
+                         ModelCheckpoint('/kaggle/working/model_weights/DenseNet121_weights.hdf5',save_best_only=True,monitor='val_accuracy',mode='max')]
+
+# Compiling the model using Adam optimizer and sparse categorical crossentropy loss
+final_DenseNet121_model.compile(optimizer = 'adam',
+                                loss = 'sparse_categorical_crossentropy',
+                                metrics = ['accuracy'])
+
+# Training the model for 25 epochs and saving the history
+final_DenseNet121_model_history = final_DenseNet121_model.fit(train_datagen,
+                                                              callbacks = DenseNet121_callbacks,
+                                                              batch_size = batch_size,
+                                                              validation_data = validation_datagen,
+                                                              epochs = 25)
+
+# Getting pre-trained weights
+EfficientNetB7 = EfficientNetB7(input_shape=(224,224,3), include_top=False)
+
+# Building the final model
+final_EfficientNetB7_model = build_model(EfficientNetB7)
+
+# Implementing EarlyStopping with val_loss and ModelCheckpoint with val_accuracy
+EfficientNetB7_callbacks = [EarlyStopping(monitor='val_loss', patience=8, mode='min', restore_best_weights=True),
+                            ModelCheckpoint('/kaggle/working/model_weights/EfficientNetB7_weights.hdf5',save_best_only=True,monitor='val_accuracy',mode='max')]
+
+# Compiling the model using Adam optimizer and sparse categorical crossentropy loss
+final_EfficientNetB7_model.compile(optimizer = 'adam',
+                                   loss = 'sparse_categorical_crossentropy', 
+                                   metrics = ['accuracy'])
+
+# Training the model for 25 epochs and saving the history
+final_EfficientNetB7_model_history = final_EfficientNetB7_model.fit(train_datagen,
+                                                                    callbacks = EfficientNetB7_callbacks,
+                                                                    batch_size = batch_size, 
+                                                                    validation_data = validation_datagen,
+                                                                    epochs = 25)
+
+# Getting pre-trained weights
+MobileNetV2 = MobileNetV2(input_shape=(224,224,3), include_top=False)
+
+# Building the final model
+final_MobileNetV2_model = build_model(MobileNetV2)
+
+# Implementing EarlyStopping with val_loss and ModelCheckpoint with val_accuracy
+MobileNetV2_callbacks = [EarlyStopping(monitor='val_loss', patience=8, mode='min', restore_best_weights=True),
+                         ModelCheckpoint('/kaggle/working/model_weights/MobileNetV2_weights.hdf5',save_best_only=True,monitor='val_accuracy',mode='max')]
+
+# Compiling the model using Adam optimizer and sparse categorical crossentropy loss
+final_MobileNetV2_model.compile(optimizer = 'adam',
+                                loss = 'sparse_categorical_crossentropy',
+                                metrics = ['accuracy'])
+
+# Training the model for 25 epochs and saving the history
+final_MobileNetV2_model_history = final_MobileNetV2_model.fit(train_datagen,
+                                                              callbacks = MobileNetV2_callbacks,
+                                                              batch_size = batch_size,
+                                                              validation_data = validation_datagen,
+                                                              epochs = 25)
+
